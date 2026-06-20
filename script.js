@@ -9,18 +9,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
 
     enterBtn.addEventListener('click', () => {
-        // Fade out entrance
+        // 1. PLAY THE MUSIC IMMEDIATELY ON CLICK (Outside the delay)
+        bgMusic.play().then(() => {
+            isPlaying = true;
+            musicToggle.innerText = '⏸ Pause Music';
+        }).catch(e => console.log("Audio still blocked: ", e));
+
+        // 2. Start the visual fade-out
         entranceScreen.style.opacity = '0';
+        
+        // 3. Wait 1 second for the fade, then show the content
         setTimeout(() => {
             entranceScreen.classList.add('hidden');
             mainContent.classList.remove('hidden');
-            
-            // Try to play music automatically (browsers may block this until click, but click just happened!)
-            bgMusic.play().then(() => {
-                isPlaying = true;
-                musicToggle.innerText = '⏸ Pause Music';
-            }).catch(e => console.log("Audio play prevented by browser."));
-            
             launchConfetti();
         }, 1000);
     });

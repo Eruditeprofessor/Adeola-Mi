@@ -7,18 +7,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
     let isPlaying = false;
+    let playPromise;
 
     enterBtn.addEventListener('click', () => {
-        // 1. PLAY THE MUSIC IMMEDIATELY ON CLICK (Outside the delay)
-        bgMusic.play().then(() => {
-            isPlaying = true;
-            musicToggle.innerText = '⏸ Pause Music';
-        }).catch(e => console.log("Audio still blocked: ", e));
+        // 1. Disable the button instantly to prevent double-tapping
+        enterBtn.disabled = true;
+        enterBtn.innerText = "Opening...";
 
-        // 2. Start the visual fade-out
+        // 2. Play the music safely using a Promise
+        playPromise = bgMusic.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Audio loaded and is playing!
+                isPlaying = true;
+                musicToggle.innerText = '⏸ Pause Music';
+            }).catch(error => {
+                console.log("Audio play failed/blocked: ", error);
+                isPlaying = false;
+                musicToggle.innerText = '🎵 Play Music';
+            });
+        }
+
+        // 3. Start the visual fade-out
         entranceScreen.style.opacity = '0';
         
-        // 3. Wait 1 second for the fade, then show the content
+        // 4. Wait 1 second for the fade, then show the content
         setTimeout(() => {
             entranceScreen.classList.add('hidden');
             mainContent.classList.remove('hidden');
@@ -29,12 +43,19 @@ document.addEventListener("DOMContentLoaded", () => {
     musicToggle.addEventListener('click', () => {
         if (isPlaying) {
             bgMusic.pause();
+            isPlaying = false;
             musicToggle.innerText = '🎵 Play Music';
         } else {
-            bgMusic.play();
-            musicToggle.innerText = '⏸ Pause Music';
+            playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    musicToggle.innerText = '⏸ Pause Music';
+                }).catch(error => {
+                    console.log("Toggle play failed: ", error);
+                });
+            }
         }
-        isPlaying = !isPlaying;
     });
 
     // --- 2. Emoji Confetti ---
